@@ -11,13 +11,12 @@ namespace ArtberryApp.Services
     public class AppService
     {
 
-
         public async Task<SessionModel> Login(LoginModel loginModel)
         {
             var returnResponse = new SessionModel();
             using (var client = new HttpClient())
             {
-                var url = $"";
+                var url = $"{Setting.BaseUrl}get-session";
 
                 var serializedStr = JsonConvert.SerializeObject(loginModel);
 
@@ -27,58 +26,93 @@ namespace ArtberryApp.Services
                 {
                     string contentStr = await response.Content.ReadAsStringAsync();
                     returnResponse = JsonConvert.DeserializeObject<SessionModel>(contentStr);
-
-
-                    await SecureStorage.SetAsync("session", "");
                 }
             }
             return returnResponse;
         }
 
 
-        public async Task<SessionModel> GetUserInfo()
+        public async Task<UserInfo> GetUserInfo()
         {
-            var returnResponse = new SessionModel();
+            var returnResponse = new UserInfo();
+
             using (var client = new HttpClient())
             {
-                var url = $"";
+                var url = $"{Setting.BaseUrl}/session-user";
 
                 var session = await SecureStorage.GetAsync("session");
 
-                var serializedStr = JsonConvert.SerializeObject(session);
+                client.DefaultRequestHeaders.Add("SessionId", session);
 
-                var response = await client.PostAsync(url, new StringContent(serializedStr, Encoding.UTF8, "application/json"));
+                var response = await client.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
                     string contentStr = await response.Content.ReadAsStringAsync();
-                    returnResponse = JsonConvert.DeserializeObject<SessionModel>(contentStr);
-
-
-                    await SecureStorage.SetAsync("session", "");
+                    returnResponse = JsonConvert.DeserializeObject<UserInfo>(contentStr);
                 }
             }
             return returnResponse;
         }
 
-        public async Task<SessionModel> Logout(LoginModel loginModel)
+        public async Task<bool> Logout()
         {
-            var returnResponse = new SessionModel();
+            var returnResponse = false;
+
+            var session = await SecureStorage.GetAsync("session");
+
+            if (string.IsNullOrEmpty(session))
+            {
+                return returnResponse;
+            }
+
             using (var client = new HttpClient())
             {
-                var url = $"";
+                var url = $"{Setting.BaseUrl}/logout";
 
-                var serializedStr = JsonConvert.SerializeObject(loginModel);
+                client.DefaultRequestHeaders.Add("SessionId", session);
 
-                var response = await client.PostAsync(url, new StringContent(serializedStr, Encoding.UTF8, "application/json"));
+                var response = await client.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
                     string contentStr = await response.Content.ReadAsStringAsync();
-                    returnResponse = JsonConvert.DeserializeObject<SessionModel>(contentStr);
+                    returnResponse = JsonConvert.DeserializeObject<bool>(contentStr);
+
+                    SecureStorage.Remove("session");
+                    Setting.Session = null;
+                }
+            }
+            return returnResponse;
+        }
 
 
-                    await SecureStorage.SetAsync("session", "");
+        public async Task<bool> CheckSession()
+        {
+            var returnResponse = false;
+            var session = await SecureStorage.GetAsync("session");
+
+            if (string.IsNullOrEmpty(session))
+            {
+                SecureStorage.Remove("session");
+                Setting.Session = null;
+                return returnResponse;
+            }
+
+            using (var client = new HttpClient())
+            {
+                var url = $"{Setting.BaseUrl}/check-session";
+
+                client.DefaultRequestHeaders.Add("SessionId", session);
+
+                var response = await client.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string contentStr = await response.Content.ReadAsStringAsync();
+                    returnResponse = JsonConvert.DeserializeObject<bool>(contentStr);
+
+                    SecureStorage.Remove("session");
                 }
             }
             return returnResponse;

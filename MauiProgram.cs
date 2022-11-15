@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.WebView.Maui;
 using ArtberryApp.Data;
+using ArtberryApp.Services;
 
 namespace ArtberryApp;
 
@@ -20,7 +21,7 @@ public static class MauiProgram
 		builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
 		
-		builder.Services.AddSingleton<WeatherForecastService>();
+		builder.Services.AddSingleton<AppService>();
 
 		return builder.Build();
 	}
