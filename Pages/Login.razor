@@ -4,25 +4,31 @@
 @inject ArtberryApp.Services.AppService AppService;
 @inject NavigationManager NavManager;
 
-<h3>Login</h3>
-
-<EditForm Model="@loginModel" OnValidSubmit="Submit">
+<style>
+    body{
+        background-image: url('imgs\\wallpaper.png');
+        background-repeat: no-repeat;
+        width:100%;
+    }
+</style>
+<br/>
+<EditForm Model="@loginModel" OnValidSubmit="Submit" style="margin-left:20%; margin-top:20%;">
     <DataAnnotationsValidator />
-    <div class="form-group">
-        <label>Email address</label>
-        <input type="email" @bind-value="loginModel.Email" class="form-control" placeholder="Enter email">
-        <ValidationMessage For="@(()=> loginModel.Email)" />
+    <div class="form-group" style="width:80%">
+        <input type="text" @bind-value="loginModel.Username" class="form-control" placeholder="Enter Username">
+        <ValidationMessage For="@(()=> loginModel.Username)" />
     </div>
-    <div class="mt-2 form-group">
-        <label>Password</label>
+    <br />
+    <div class="mt-2 form-group" style="width:80%">
+        
         <input type="password" @bind-value="loginModel.Password" class="form-control" placeholder="Password">
         <ValidationMessage For="@(()=> loginModel.Password)" />
     </div>
-
-    <div class="text-center mt-2">
+    <br />
+    <div class="mt-2" style="margin-left:35%;">
         <button class="btn btn-primary" type="submit">
             <span class="@_spinnerClass" role="status" aria-hidden="true"></span>
-            SignIn
+            Login
         </button>
     </div>
 </EditForm>
@@ -31,6 +37,20 @@
     LoginModel loginModel = new LoginModel();
 
     private string _spinnerClass = "";
+
+     protected override async Task OnInitializedAsync()
+    {
+        var expired = await SecureStorage.GetAsync("expired");
+
+        if (expired == "1")
+        {
+             SecureStorage.Remove("expired");
+            await App.Current.MainPage.DisplayAlert("", "You session has expired or you logged in from another device", "OK");
+        }
+
+    }
+
+
     private async void Submit()
     {
         _spinnerClass = "spinner-border spinner-border-sm";
@@ -40,7 +60,7 @@
         { 
             await SecureStorage.SetAsync("session", response.Id);
             Setting.Session = response.Id;
-            NavManager.NavigateTo("/music");
+            NavManager.NavigateTo("/red");
         }
         else
         {

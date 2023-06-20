@@ -2,20 +2,24 @@
 @inherits LayoutComponentBase
 
 <div class="page">
-	<div class="sidebar">
-		@if (!string.IsNullOrEmpty(Setting.Session))
-		{
-			<NavMenu />
-		}
-	</div>
-
-	<main>
-		<div class="top-row px-4">
-			<a href="https://ashy-pebble-0a5a86103.2.azurestaticapps.net" target="_blank">About</a>
-		</div>
-
-		<article class="content px-4">
-			@Body
-		</article>
-	</main>
+    @if (!string.IsNullOrEmpty(Setting.Session))
+    {
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    }
+    <main>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
 </div>
+
+@code {
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Setting.Session = await SecureStorage.GetAsync("session");
+    }
+}

@@ -16,7 +16,7 @@ namespace ArtberryApp.Services
             var returnResponse = new SessionModel();
             using (var client = new HttpClient())
             {
-                var url = $"{Setting.BaseUrl}get-session";
+                var url = $"{Setting.BaseUrl}/get-session";
 
                 var serializedStr = JsonConvert.SerializeObject(loginModel);
 
@@ -34,25 +34,27 @@ namespace ArtberryApp.Services
 
         public async Task<UserInfo> GetUserInfo()
         {
-            var returnResponse = new UserInfo();
 
-            using (var client = new HttpClient())
-            {
-                var url = $"{Setting.BaseUrl}/session-user";
+				var returnResponse = new UserInfo();
 
-                var session = await SecureStorage.GetAsync("session");
+				using (var client = new HttpClient())
+				{
+					var url = $"{Setting.BaseUrl}/session-user";
 
-                client.DefaultRequestHeaders.Add("SessionId", session);
+					var session = await SecureStorage.GetAsync("session");
 
-                var response = await client.GetAsync(url);
+					client.DefaultRequestHeaders.Add("SessionId", session);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    string contentStr = await response.Content.ReadAsStringAsync();
-                    returnResponse = JsonConvert.DeserializeObject<UserInfo>(contentStr);
-                }
-            }
-            return returnResponse;
+					var response = await client.GetAsync(url);
+
+					if (response.IsSuccessStatusCode)
+					{
+						string contentStr = await response.Content.ReadAsStringAsync();
+						returnResponse = JsonConvert.DeserializeObject<UserInfo>(contentStr);
+					}
+				}
+				return returnResponse;
+		
         }
 
         public async Task<bool> Logout()
@@ -81,7 +83,7 @@ namespace ArtberryApp.Services
 
                     SecureStorage.Remove("session");
                     Setting.Session = null;
-                }
+				}
             }
             return returnResponse;
         }
@@ -111,8 +113,6 @@ namespace ArtberryApp.Services
                 {
                     string contentStr = await response.Content.ReadAsStringAsync();
                     returnResponse = JsonConvert.DeserializeObject<bool>(contentStr);
-
-                    SecureStorage.Remove("session");
                 }
             }
             return returnResponse;

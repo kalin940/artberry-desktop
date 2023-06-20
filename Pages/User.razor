@@ -1,44 +1,84 @@
 ﻿@page "/user"
+@using ArtberryApp.Models;
+@inject ArtberryApp.Services.AppService AppService;
+@inject NavigationManager NavManager;
 
-<h1>Weather forecast</h1>
-
-<p>This component demonstrates fetching data from a service.</p>
-
-@*@if (forecasts == null)
+@if (userInfo == null)
 {
 	<p><em>Loading...</em></p>
-}
-else
+}else
 {
-	<table class="table">
-		<thead>
-			<tr>
-				<th>Date</th>
-				<th>Temp. (C)</th>
-				<th>Temp. (F)</th>
-				<th>Summary</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var forecast in forecasts)
-			{
-				<tr>
-					<td>@forecast.Date.ToShortDateString()</td>
-					<td>@forecast.TemperatureC</td>
-					<td>@forecast.TemperatureF</td>
-					<td>@forecast.Summary</td>
-				</tr>
-			}
-		</tbody>
-	</table>
+	<div class="col-lg-8">
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-sm-5">
+                <p class="mb-0">User Name</p>
+              </div>
+              <div class="col-sm-7">
+                        <p class="text-muted mb-0">@userInfo.User.Name</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-5">
+                <p class="mb-0">Email</p>
+              </div>
+              <div class="col-sm-7">
+                        <p class="text-muted mb-0">@userInfo.User.Email</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-5">
+                <p class="mb-0">Subscription</p>
+              </div>
+              <div class="col-sm-7">
+                        <p class="text-muted mb-0">@userInfo.Subscription.Name</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-5">
+                        <p class="mb-0">Subscription start</p>
+              </div>
+              <div class="col-sm-7">
+                        <p class="text-muted mb-0">@userInfo.User.SubscriptionStart?.ToShortDateString()</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-5">
+                        <p class="mb-0">Subscription end</p>
+              </div>
+              <div class="col-sm-7">
+                        <p class="text-muted mb-0">@userInfo.User.SubscriptionEnd?.ToShortDateString()</p>
+              </div>
+            </div>
+          </div>
+        </div>
+	</div>
 }
 
-@code {
-	private WeatherForecast[] forecasts;
+@code{
+
+	private UserInfo userInfo;
 
 	protected override async Task OnInitializedAsync()
 	{
-		forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+		var response = await AppService.GetUserInfo();
+
+		if (response.User == null || response.Subscription == null)
+		{
+			SecureStorage.Remove("session");
+			Setting.Session = null;
+			NavManager.NavigateTo("/login");
+		}
+		else
+		{
+			userInfo = response;
+		}
+
+		
 	}
 }
-*@

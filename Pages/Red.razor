@@ -1,0 +1,66 @@
+﻿@page "/red"
+@using ArtberryApp.Models;
+@inject ArtberryApp.Services.AppService AppService;
+@inject NavigationManager NavManager;
+@inject IJSRuntime JsRuntime;
+
+<style>
+    .radio-div{
+        background-image: url('imgs\\artberry_red.png');
+        background-repeat: no-repeat;
+        width:600px;
+        height:500px;
+    }
+</style>
+<div class="radio-div">
+    <audio src="https://stream.artberry.eu:444" controls autoplay style="margin-left:5%; margin-top:5%" id="red-player" onwaiting="@(()=> Reload())"></audio>
+</div>
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var timer = new PeriodicTimer(TimeSpan.FromMinutes(5));
+
+        while (await timer.WaitForNextTickAsync())
+        {
+            NetworkAccess accessType = Connectivity.Current.NetworkAccess;
+            if (accessType == NetworkAccess.Internet)
+            {
+                 bool response = await AppService.CheckSession();
+
+                if (!response)
+                {
+                    await SecureStorage.SetAsync("expired", "1");
+                    SecureStorage.Remove("session");
+                    Setting.Session = null;
+                    NavManager.NavigateTo("/login");
+                    break;
+                }
+            }
+           
+        }
+    }
+
+    async Task Reload()
+    {
+        NetworkAccess accessType = Connectivity.Current.NetworkAccess;
+
+        var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        if (accessType != NetworkAccess.Internet)
+        {
+            while (await timer.WaitForNextTickAsync())
+            {
+                accessType = Connectivity.Current.NetworkAccess;
+                if (accessType == NetworkAccess.Internet)
+                {
+                    await timer.WaitForNextTickAsync();
+                    NavManager.NavigateTo("/red", true);
+                    break;
+                }
+            }
+        }
+    }
+}

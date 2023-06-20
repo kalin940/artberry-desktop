@@ -1,5 +1,5 @@
 ﻿@using ArtberryApp.Models;
-
+@inject ArtberryApp.Services.AppService AppService;
 @inject NavigationManager NavManager;
 
 <div class="top-row ps-3 navbar navbar-dark">
@@ -14,8 +14,13 @@
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
 	<nav class="flex-column">
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="music" Match="NavLinkMatch.All">
-				<span class="oi oi-musical-note" aria-hidden="true"></span> Music
+			<NavLink class="nav-link" href="red" Match="NavLinkMatch.All">
+				<span class="oi oi-musical-note" aria-hidden="true"></span> Red
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="white" Match="NavLinkMatch.All">
+				<span class="oi oi-musical-note" aria-hidden="true"></span> White
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
@@ -23,10 +28,15 @@
 				<span class="oi oi-person" aria-hidden="true"></span> User
 			</NavLink>
 		</div>
+		
 		<div class="nav-item px-3" @onclick="SignOut">
-			<NavLink class="nav-link" href="#">
+			<NavLink class="nav-link" href="logout">
 				<span class="oi oi-account-logout" aria-hidden="true"></span> Exit
 			</NavLink>
+		</div>
+
+		<div class="nav-item px-4">
+			<a href="https://ashy-pebble-0a5a86103.2.azurestaticapps.net" target="_blank" style="margin-left:10%">Our Site</a>
 		</div>
 	</nav>
 </div>
@@ -42,8 +52,11 @@
 	}
 
 
-	private void SignOut()
+	private async void SignOut()
 	{
+
+		await AppService.Logout();
+		
 		SecureStorage.RemoveAll();
 		Setting.Session = null;
 		NavManager.NavigateTo("/login");
